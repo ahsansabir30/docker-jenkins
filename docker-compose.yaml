@@ -1,0 +1,40 @@
+version: "3.8"
+services:
+  db:
+    build: ./db
+    image: ahsansabir30/db
+    volumes: 
+    - type: volume
+      source: db_volume
+      target: /var/lib/mysql
+    environment:
+    - MYSQL_ROOT_PASSWORD=password
+    - MYSQL_DATABASE=flask-db
+  flask-app:
+    build: ./flask-app
+    image: ahsansabir30/app
+    ports:
+    - target: 5000
+      published: 5000
+    environment:
+    - DATABASE_URI=mysql+pymysql://root:password@db:3306/flask-db
+    - SECRET_KEY=DAKFNAKJNFAS545AS4
+    depends_on:
+    - "db"
+  nginx:
+    image: nginx:latest
+    volumes:
+    - type: bind
+      source: ./nginx/nginx.conf
+      target: /etc/nginx/nginx.conf
+    ports:
+    - target: 80
+      published: 80
+volumes:
+  db_volume:
+
+
+# Once the containers up, we have to run the command python3 create.py in the flask-app container
+# In terminal run docker exec -t flask_app_container_id bash -> then python3 create.py
+# To check if tables were created within container - we can open db container shell docker exec -it db_container_id mysql -u root -ppassword
+# Then run mysql commands
